@@ -1,1 +1,3 @@
-node_modules
+vendor/*
+^vendor/slim
+config/development.json
