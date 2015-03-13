@@ -72,7 +72,7 @@ Filler, to keep the same size
    <div class="control-group">
      <label class="control-label severity_levels" id="event-severity">Severity: </label>
        <div class="controls controls-row">
-        <select id="severity-select" name="severity" class="input-small" title="
+        <select id="severity-select" name="severity" class="input" title="
         <?php
            $config = Configuration::get_configuration();
            if (isset($config['severity']) && isset($config['severity']['tooltip_title'])) {
@@ -91,7 +91,7 @@ Filler, to keep the same size
             if ($sev_level == $severity) {
                 echo 'selected="true"';
             }
-            echo '>' . $sev_level . '</option>';
+            echo '>' . $sev_level . '. ' . $desc . '</option>';
         }
         ?>
         </select>
@@ -198,15 +198,43 @@ Filler, to keep the same size
     // Enumerate any custom javascript assets and make them accessible externally.
     $config = Configuration::get_configuration();
     $edit_page_features = $config['edit_page_features'];
+
+	/*
+		Build up the path to the appropriate route for this asset.
+		The feature's routes.php should include a route that locates and serves 
+		the static asset.
+
+		The directory containing custom Morgue features should follow the 
+		same structure as the core project, including an 'assets/js/' directory. 
+		Doing this, the route declaration can call stream_resolve_include_path()
+		to locate the asset via the include_path.
+    */
     foreach ($edit_page_features as $feature_name) {
-        $feature = Configuration::get_configuration($feature_name);
-        if (isset($feature['custom_js_assets']) and $feature['custom_js_assets'] == "on") {
-            // Build up the path to the appropriate route for this asset.
-            // The feature's routes.php should include a route that locates and serves the static asset.
-            // The directory containing custom Morgue features should follow the same structure as the
-            //core project, including an 'assets/js/' directory. Doing this, the route declaration can
-            // call stream_resolve_include_path() to locate the asset via the include_path.
-            echo "<script type=\"text/javascript\" src=\"/$feature_name/assets/js/$feature_name.js\"></script>";
+		$feature = Configuration::get_configuration($feature_name);
+
+        if (isset($feature['custom_css_assets'])) {
+			// If we are just configured "on" then default to
+			// include a js file named after the feature			
+			if ($feature['custom_css_assets'] === "on") {
+				$feature['custom_css_assets'] = array("{$feature_name}.js") ;
+			// we might otherwise have and array
+			} else if (is_array($feature['custom_css_assets'])) {
+				foreach ($feature['custom_css_assets'] as $css_file) {
+                        echo "<link rel=\"stylesheet\" href=\"/{$feature_name}/css/{$css_file}\" />";
+				}
+			}
+        }
+        if (isset($feature['custom_js_assets'])) {
+			// If we are just configured "on" then default to
+			// include a js file named after the feature			
+			if ($feature['custom_js_assets'] === "on") {
+				$feature['custom_js_assets'] = array("{$feature_name}.js") ;
+			// we might otherwise have and array
+			} else if (is_array($feature['custom_js_assets'])) {
+				foreach ($feature['custom_js_assets'] as $js_file) {
+					echo "<script type=\"text/javascript\" src=\"/{$feature_name}/js/{$js_file}\"></script>";
+				}
+			}
         }
     }
 ?>
