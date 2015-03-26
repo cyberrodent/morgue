@@ -1,5 +1,10 @@
 $("#summaryeditbutton").on("click", summary_edit_save_button);
 $("#summarycancelbutton").on("click", summary_cancel_button);
+
+$("#summaryeditbutton").hide();
+$("#summarycancelbutton").hide();
+
+
 $("#add-status").on("click", show_status_fields);
 $("#clear-status").on("click", remove_status_fields);
 $("#severity-select").change(update_severity_for_event);
@@ -14,7 +19,24 @@ $("#eventtitle").blur(update_title_for_event);
 $("#gcal").blur(update_gcal_for_event);
 $("#contact").blur(update_contact_for_event);
 $.getJSON("/events/"+get_current_event_id()+"/summary", function(data) {
-    $("#summary").html(markdown.toHTML(data.summary));
+    // $("#summary").html(markdown.toHTML(data.summary));
+	var textarea = $("<textarea id='summary_ta' />");
+	textarea.text(data.summary);
+    $("#summary").append(textarea);
+	$("#summary_ta").hide();
+	var ee_options = {
+	 container: 'summary_ee',
+	   textarea: summary_ta,
+	   basePath: '../assets/EpicEditor',
+	   autogrow: true
+
+	};
+	var editor = new EpicEditor( ee_options ).load();
+	editor.preview();
+
+	sharejs.open('test', 'text', 'http://morgue.local:8000/channel', function(error, doc) {
+		// doc.attach_textarea( $("#summary_ee textarea")[0] );
+	});
 });
 
 $('.datepicker')
